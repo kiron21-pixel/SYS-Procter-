@@ -243,7 +243,7 @@
             <Border Grid.Column="2" Classes="card">
               <DockPanel>
                 <TextBlock DockPanel.Dock="Top" Classes="h2" Text="Installed" />
-                <TextBox DockPanel.Dock="Top" Watermark="Filter by name" Text="{Binding AppFilter}" Margin="0,0,0,8" />
+                <TextBox DockPanel.Dock="Top" PlaceholderText="Filter by name" Text="{Binding AppFilter}" Margin="0,0,0,8" />
                 <ScrollViewer>
                   <ItemsControl ItemsSource="{Binding Apps}">
                     <ItemsControl.ItemTemplate>
