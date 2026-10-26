@@ -9,7 +9,7 @@
            UpgradeCode="F0783A61-1612-4573-93B0-B30AD4B9C571" Scope="perMachine" Compressed="yes">
     <MajorUpgrade DowngradeErrorMessage="A newer version of AI Laptop Guardian is already installed." />
     <MediaTemplate EmbedCab="yes" />
-    <Icon Id="GuardianIcon" SourceFile="..\..\assets\brand\guardian.ico" />
+    <Icon Id="GuardianIcon" SourceFile="$(var.RepoRoot)\assets\brand\guardian.ico" />
     <Property Id="ARPPRODUCTICON" Value="GuardianIcon" />
     <Property Id="ARPNOMODIFY" Value="1" />
 

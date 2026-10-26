@@ -31,7 +31,7 @@ $wix = "$toolDir\wix.exe"
 if (-not (Test-Path $wix)) {
   Invoke-Checked 'install WiX' { dotnet tool install wix --version 5.0.2 --tool-path $toolDir }
 }
-Invoke-Checked 'wix build' { & $wix build "$PSScriptRoot\Package.wxs" -arch $Arch -d "Version=$version" -d "PublishDir=$publish" -o $out }
+Invoke-Checked 'wix build' { & $wix build "$PSScriptRoot\Package.wxs" -arch $Arch -d "Version=$version" -d "PublishDir=$publish" -d "RepoRoot=$root" -o $out }
 if (-not (Test-Path $out)) {
   Write-Host "::error title=MSI missing::wix build reported success but $out does not exist"
   throw "MSI not produced"
