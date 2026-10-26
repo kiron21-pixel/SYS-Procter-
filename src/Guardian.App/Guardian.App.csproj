@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>ai-laptop-guardian</AssemblyName>
+    <RootNamespace>Guardian.App</RootNamespace>
+    <ApplicationIcon>Assets\guardian.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+  </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Guardian.Core\Guardian.Core.csproj" />
+    <ProjectReference Include="..\Guardian.Data\Guardian.Data.csproj" />
+    <ProjectReference Include="..\Guardian.Platform.Windows\Guardian.Platform.Windows.csproj" />
+    <ProjectReference Include="..\Guardian.Platform.MacOS\Guardian.Platform.MacOS.csproj" />
+    <ProjectReference Include="..\Guardian.Platform.Linux\Guardian.Platform.Linux.csproj" />
+  </ItemGroup>
+</Project>

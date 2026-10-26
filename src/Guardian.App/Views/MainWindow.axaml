@@ -1,0 +1,337 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Guardian.App.ViewModels"
+        xmlns:app="using:Guardian.App"
+        x:Class="Guardian.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="AI Laptop Guardian"
+        Icon="/Assets/logo-256.png"
+        Width="1180" Height="780" MinWidth="820" MinHeight="560"
+        Background="{DynamicResource PageBackground}">
+  <DockPanel>
+    <!-- Header -->
+    <Border DockPanel.Dock="Top" Background="{DynamicResource CardBackground}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="0,0,0,1" Padding="20,12">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+          <Viewbox Width="40" Height="40">
+            <Canvas Width="64" Height="64">
+              <Path Data="{StaticResource ShieldGeometry}" Fill="{DynamicResource BrandRed}" />
+              <Path Data="{StaticResource CheckGeometry}" Stroke="White" StrokeThickness="6" StrokeLineCap="Round" StrokeJoin="Round" />
+            </Canvas>
+          </Viewbox>
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="AI Laptop Guardian" Classes="h1" Foreground="{DynamicResource BrandRed}" />
+            <TextBlock Text="{Binding PlatformLine}" Classes="muted" FontSize="12" />
+          </StackPanel>
+        </StackPanel>
+        <Border Grid.Column="2" Classes="pill" VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="Mode:" FontSize="13" />
+            <TextBlock Text="{Binding ModeTitle}" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource BrandRed}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Border>
+
+    <TabControl TabStripPlacement="Left" Padding="20,16">
+      <!-- Overview -->
+      <TabItem Header="Overview">
+        <ScrollViewer>
+          <StackPanel MaxWidth="900" HorizontalAlignment="Left">
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="Status" />
+                <TextBlock Text="{Binding OverallSummary}" TextWrapping="Wrap" />
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                  <Button Classes="primary" Content="Run read-only checks" Command="{Binding RunChecksCommand}" IsEnabled="{Binding !IsBusy}" />
+                  <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="120" VerticalAlignment="Center" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="h2" Text="Current mode" />
+                <TextBlock Text="{Binding ModeTitle}" FontWeight="SemiBold" Foreground="{DynamicResource BrandRed}" />
+                <TextBlock Text="{Binding ModeExplanation}" Classes="muted" />
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="h2" Text="This computer" />
+                <TextBlock Text="{Binding PlatformLine}" />
+                <TextBlock Text="{Binding SupportNote}" Classes="muted" />
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="4">
+                <TextBlock Classes="h2" Text="What Guardian can and cannot do here" />
+                <ItemsControl ItemsSource="{Binding Features}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="app:FeatureRow">
+                      <Grid ColumnDefinitions="230,90,130,*" Margin="0,4">
+                        <TextBlock Text="{Binding Feature}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                        <TextBlock Grid.Column="1" Text="{Binding Implemented}" />
+                        <TextBlock Grid.Column="2" Text="{Binding OnThisOs}" />
+                        <TextBlock Grid.Column="3" Text="{Binding Notes}" Classes="muted" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Security -->
+      <TabItem Header="Security">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,12">
+            <TextBlock Classes="h2" Text="Security checks" />
+            <TextBlock Classes="muted" Text="Every check shows whether it is implemented, supported here, permitted, whether it actually ran, the evidence it used, and what changed (always nothing in these checks). A passing check is not a guarantee of safety." />
+            <Button Classes="primary" Content="Run read-only checks" Command="{Binding RunChecksCommand}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" />
+          </StackPanel>
+          <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Checks}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CheckRowViewModel">
+                  <Border Classes="card">
+                    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                      <Ellipse Width="12" Height="12" Fill="{Binding Tone}" Margin="0,5,10,0" VerticalAlignment="Top" />
+                      <TextBlock Grid.Column="1" Text="{Binding Title}" FontWeight="SemiBold" />
+                      <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding Status}" Foreground="{Binding Tone}" VerticalAlignment="Center" />
+                        <Button Content="Run" IsVisible="{Binding IsOnDemand}" Command="{Binding RunCommand}" />
+                      </StackPanel>
+                      <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                      <TextBlock Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Facts}" Classes="muted" FontSize="12" Margin="0,6,0,0" />
+                      <Expander Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Header="Evidence" Margin="0,6,0,0" HorizontalAlignment="Stretch">
+                        <SelectableTextBlock Text="{Binding Evidence}" TextWrapping="Wrap" FontFamily="monospace" FontSize="12" />
+                      </Expander>
+                      <TextBlock Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding FollowUp, StringFormat='Follow-up: {0}'}" IsVisible="{Binding HasFollowUp}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </DockPanel>
+      </TabItem>
+
+      <!-- Performance -->
+      <TabItem Header="Performance">
+        <ScrollViewer>
+          <StackPanel MaxWidth="900" HorizontalAlignment="Left">
+            <Border Classes="card">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="h2" Text="Memory and uptime" />
+                <TextBlock Text="{Binding MemoryText}" />
+                <TextBlock Text="{Binding UptimeText}" Classes="muted" />
+                <Button Content="Refresh" Command="{Binding RefreshPerformanceCommand}" HorizontalAlignment="Left" />
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel>
+                <TextBlock Classes="h2" Text="Disks" />
+                <ItemsControl ItemsSource="{Binding Disks}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:DiskRow">
+                      <Grid ColumnDefinitions="200,*" Margin="0,2"><TextBlock Text="{Binding Name}" /><TextBlock Grid.Column="1" Text="{Binding Detail}" /></Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel>
+                <TextBlock Classes="h2" Text="Programs using the most memory" />
+                <TextBlock Classes="muted" Margin="0,0,0,8" Text="For information only. Guardian never stops a program because it uses a lot of CPU or memory." />
+                <ItemsControl ItemsSource="{Binding Processes}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ProcessRow">
+                      <Grid ColumnDefinitions="260,90,*" Margin="0,2">
+                        <TextBlock Text="{Binding Name}" /><TextBlock Grid.Column="1" Text="{Binding Pid}" Classes="muted" /><TextBlock Grid.Column="2" Text="{Binding Memory}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Cleanup -->
+      <TabItem Header="Cleanup">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,12">
+            <TextBlock Classes="h2" Text="Temporary files" />
+            <TextBlock Classes="muted" Text="Only your own temporary folder is scanned. A file is listed only if it is inside that folder, is not a link, is not on the exclusion list, has not changed for 7 days, is owned by you, and is not open in any program. If any of these can't be confirmed, the file is skipped." />
+            <TextBlock Text="{Binding CleanupSummary}" TextWrapping="Wrap" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Button Content="Scan (read-only)" Command="{Binding ScanCleanupCommand}" />
+              <Button Classes="primary" Content="Move selected to holding area" Command="{Binding MoveSelectedCommand}" IsEnabled="{Binding CanMoveFiles}" />
+            </StackPanel>
+            <TextBlock Classes="muted" IsVisible="{Binding IsObserveOnly}" Text="Moving files is turned off in Observe Only mode. Enable Safe Maintenance on the Mode tab if you want to use it." />
+            <TextBlock Text="{Binding CleanupMessage}" TextWrapping="Wrap" Foreground="{DynamicResource BrandRed}" />
+          </StackPanel>
+          <Border DockPanel.Dock="Bottom" Classes="card" Margin="0,12,0,0" MaxHeight="220">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Top" Classes="h2" Text="Holding area (restorable for 7 days)" />
+              <ScrollViewer>
+                <ItemsControl ItemsSource="{Binding Held}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:HeldRow">
+                      <Grid ColumnDefinitions="*,140,90,Auto" Margin="0,2">
+                        <TextBlock Text="{Binding OriginalPath}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding MovedAt}" Classes="muted" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="2" Text="{Binding Size}" VerticalAlignment="Center" />
+                        <Button Grid.Column="3" Content="Restore" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).RestoreCommand}" CommandParameter="{Binding}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </DockPanel>
+          </Border>
+          <Border Classes="card">
+            <ScrollViewer>
+              <ItemsControl ItemsSource="{Binding Candidates}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:CandidateRowViewModel">
+                    <Grid ColumnDefinitions="Auto,*,90,110" Margin="0,1">
+                      <CheckBox IsChecked="{Binding IsSelected}" />
+                      <TextBlock Grid.Column="1" Text="{Binding Path}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="2" Text="{Binding Size}" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="3" Text="{Binding Age}" Classes="muted" VerticalAlignment="Center" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Border>
+        </DockPanel>
+      </TabItem>
+
+      <!-- Startup & apps -->
+      <TabItem Header="Startup &amp; apps">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,12">
+            <TextBlock Classes="h2" Text="Startup items and installed applications" />
+            <TextBlock Classes="muted" Text="Read-only. Guardian never disables startup items or uninstalls, modifies or replaces applications." />
+            <Button Content="Load inventory" Command="{Binding LoadInventoryCommand}" HorizontalAlignment="Left" />
+            <TextBlock Text="{Binding InventorySummary}" Classes="muted" />
+          </StackPanel>
+          <Grid ColumnDefinitions="*,16,*">
+            <Border Classes="card">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="Starts automatically" />
+                <ScrollViewer>
+                  <ItemsControl ItemsSource="{Binding StartupItems}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:StartupRow">
+                        <StackPanel Margin="0,3">
+                          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                          <TextBlock Classes="muted" FontSize="12" Text="{Binding Mechanism}" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </DockPanel>
+            </Border>
+            <Border Grid.Column="2" Classes="card">
+              <DockPanel>
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="Installed" />
+                <TextBox DockPanel.Dock="Top" Watermark="Filter by name" Text="{Binding AppFilter}" Margin="0,0,0,8" />
+                <ScrollViewer>
+                  <ItemsControl ItemsSource="{Binding Apps}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:AppRow">
+                        <Grid ColumnDefinitions="*,120" Margin="0,2">
+                          <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                          <TextBlock Grid.Column="1" Text="{Binding Version}" Classes="muted" TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </DockPanel>
+            </Border>
+          </Grid>
+        </DockPanel>
+      </TabItem>
+
+      <!-- Mode -->
+      <TabItem Header="Mode">
+        <ScrollViewer>
+          <StackPanel MaxWidth="820" HorizontalAlignment="Left">
+            <Border Classes="card">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="h2" Text="A · Observe Only (default)" />
+                <TextBlock Classes="muted" Text="{Binding ObserveExplanation}" />
+                <Button Content="Return to Observe Only" Command="{Binding ReturnToObserveOnlyCommand}" IsVisible="{Binding !IsObserveOnly}" HorizontalAlignment="Left" />
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="h2" Text="B · Safe Maintenance" />
+                <TextBlock Classes="muted" Text="{Binding MaintenanceExplanation}" />
+                <Button Content="Enable Safe Maintenance…" Command="{Binding AskSafeMaintenanceCommand}" HorizontalAlignment="Left" />
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="h2" Text="C · Controlled Repair" />
+                <TextBlock Classes="muted" Text="{Binding RepairExplanation}" />
+                <Button Content="Enable Controlled Repair…" Command="{Binding AskControlledRepairCommand}" HorizontalAlignment="Left" />
+              </StackPanel>
+            </Border>
+            <Border Classes="card" IsVisible="{Binding HasPending}" BorderBrush="{DynamicResource BrandRed}" BorderThickness="2">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="{Binding PendingTitle, StringFormat='Confirm: enable {0}'}" />
+                <TextBlock Text="{Binding PendingExplanation}" TextWrapping="Wrap" />
+                <TextBlock Text="Guardian will still never uninstall apps, edit the registry or system settings, touch browser data or personal files, or disable security software." TextWrapping="Wrap" Classes="muted" />
+                <TextBlock Text="{Binding PendingPhrase, StringFormat='To confirm, type: {0}'}" FontWeight="SemiBold" />
+                <TextBox Text="{Binding ConfirmationText}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Classes="primary" Content="I understand, enable it" Command="{Binding ConfirmModeChangeCommand}" />
+                  <Button Content="Cancel" Command="{Binding CancelModeChangeCommand}" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
+            <TextBlock Text="{Binding ModeMessage}" TextWrapping="Wrap" Foreground="{DynamicResource BrandRed}" />
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Activity -->
+      <TabItem Header="Activity">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,12">
+            <TextBlock Classes="h2" Text="Everything Guardian has changed" />
+            <TextBlock Classes="muted" Text="{Binding DataFolder, StringFormat='Each operation is logged with its exact target, result and how to undo it. Log and settings are stored only on this computer, in: {0}'}" />
+          </StackPanel>
+          <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Operations}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:OperationRow">
+                  <Border Classes="card">
+                    <StackPanel Spacing="2">
+                      <TextBlock Text="{Binding What}" FontWeight="SemiBold" />
+                      <TextBlock Text="{Binding Target}" Classes="muted" FontSize="12" />
+                      <TextBlock FontSize="12" Text="{Binding When}" />
+                      <TextBlock FontSize="12" Text="{Binding Status, StringFormat='Result: {0}'}" />
+                      <TextBlock FontSize="12" Text="{Binding Undo}" TextWrapping="Wrap" />
+                      <TextBlock FontSize="12" Text="{Binding Error}" Foreground="{DynamicResource BrandRed}" TextWrapping="Wrap" />
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </DockPanel>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
+</Window>

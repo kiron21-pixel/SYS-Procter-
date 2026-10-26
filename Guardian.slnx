@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Guardian.App/Guardian.App.csproj" />
+    <Project Path="src/Guardian.Core/Guardian.Core.csproj" />
+    <Project Path="src/Guardian.Data/Guardian.Data.csproj" />
+    <Project Path="src/Guardian.Platform.Linux/Guardian.Platform.Linux.csproj" />
+    <Project Path="src/Guardian.Platform.MacOS/Guardian.Platform.MacOS.csproj" />
+    <Project Path="src/Guardian.Platform.Windows/Guardian.Platform.Windows.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Guardian.App.Tests/Guardian.App.Tests.csproj" />
+    <Project Path="tests/Guardian.Core.Tests/Guardian.Core.Tests.csproj" />
+    <Project Path="tests/Guardian.Data.Tests/Guardian.Data.Tests.csproj" />
+    <Project Path="tests/Guardian.Platform.Tests/Guardian.Platform.Tests.csproj" />
+  </Folder>
+</Solution>

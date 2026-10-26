@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=AI Laptop Guardian
+Comment=Security and maintenance status for this computer (starts in Observe Only mode)
+Exec=/usr/bin/ai-laptop-guardian
+Icon=ai-laptop-guardian
+Terminal=false
+Categories=System;Security;Monitor;

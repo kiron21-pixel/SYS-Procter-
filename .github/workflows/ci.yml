@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  AVALONIA_TELEMETRY_OPTOUT: "1"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build and test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet build -c Release
+      - name: Unit, platform and headless UI tests
+        run: dotnet test -c Release --no-build --logger "trx" --results-directory TestResults
+      - name: Read-only report on this runner (smoke test of the real adapter)
+        run: dotnet run -c Release --no-build --project src/Guardian.App -- --report
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}
+          path: TestResults
+
+  test-fedora:
+    name: Build and test (Fedora container)
+    runs-on: ubuntu-24.04
+    container: fedora:42
+    steps:
+      - run: dnf install -y dotnet-sdk-10.0 git fontconfig
+      - uses: actions/checkout@v4
+      - run: dotnet test -c Release
+      - run: dotnet run -c Release --project src/Guardian.App -- --report
+
+  package-linux:
+    needs: test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: packaging/linux/build-deb.sh x64
+      - name: Non-interference test (install, report, uninstall, diff) on the throwaway runner
+        run: sudo GUARDIAN_DISPOSABLE_VM=1 tests/noninterference/linux-deb.sh "$PWD"/artifacts/linux/*.deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-deb
+          path: artifacts/linux/*.deb
+
+  package-windows:
+    needs: test
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: pwsh packaging/windows/build-msi.ps1 -Arch x64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-msi
+          path: artifacts/windows/*.msi
+
+  package-macos:
+    needs: test
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build unsigned pkg (signing needs Developer ID secrets; see docs/INSTALL.md)
+        run: packaging/macos/build-pkg.sh arm64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-pkg
+          path: artifacts/macos/*.pkg

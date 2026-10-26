@@ -1,0 +1,66 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Guardian.App.GuardianApp"
+             RequestedThemeVariant="Default">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="BrandRed" Color="#D32F2F" />
+          <SolidColorBrush x:Key="BrandRedSoft" Color="#FDECEA" />
+          <SolidColorBrush x:Key="CardBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="PageBackground" Color="#F6F6F7" />
+          <SolidColorBrush x:Key="MutedText" Color="#5F6368" />
+          <SolidColorBrush x:Key="CardBorder" Color="#E3E3E6" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="BrandRed" Color="#EF5350" />
+          <SolidColorBrush x:Key="BrandRedSoft" Color="#3A1F1F" />
+          <SolidColorBrush x:Key="CardBackground" Color="#232327" />
+          <SolidColorBrush x:Key="PageBackground" Color="#1A1A1D" />
+          <SolidColorBrush x:Key="MutedText" Color="#A8A8AE" />
+          <SolidColorBrush x:Key="CardBorder" Color="#34343A" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+      <StreamGeometry x:Key="ShieldGeometry">M32 4 L56 12 V30 C56 45 46 55 32 60 C18 55 8 45 8 30 V12 Z</StreamGeometry>
+      <StreamGeometry x:Key="CheckGeometry">M21 32.5 L28.5 40 L43.5 24.5</StreamGeometry>
+    </ResourceDictionary>
+  </Application.Resources>
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="TabControl > TabItem">
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="MinHeight" Value="40" />
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="Background" Value="{DynamicResource CardBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="16" />
+      <Setter Property="Margin" Value="0,0,0,12" />
+    </Style>
+    <Style Selector="TextBlock.h1">
+      <Setter Property="FontSize" Value="22" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.h2">
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="Foreground" Value="{DynamicResource MutedText}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="{DynamicResource BrandRed}" />
+      <Setter Property="Foreground" Value="White" />
+    </Style>
+    <Style Selector="Border.pill">
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Padding" Value="8,2" />
+      <Setter Property="Background" Value="{DynamicResource BrandRedSoft}" />
+    </Style>
+  </Application.Styles>
+</Application>

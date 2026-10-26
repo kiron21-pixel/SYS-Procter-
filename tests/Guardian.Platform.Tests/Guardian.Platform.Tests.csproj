@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Guardian.Platform.Windows\Guardian.Platform.Windows.csproj" />
+    <ProjectReference Include="..\..\src\Guardian.Platform.MacOS\Guardian.Platform.MacOS.csproj" />
+    <ProjectReference Include="..\..\src\Guardian.Platform.Linux\Guardian.Platform.Linux.csproj" />
+    <ProjectReference Include="..\Guardian.Core.Tests\Guardian.Core.Tests.csproj" />
+  </ItemGroup>
+</Project>
