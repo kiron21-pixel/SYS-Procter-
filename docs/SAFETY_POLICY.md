@@ -17,6 +17,7 @@ The rule above all others: **when uncertain, observe and report instead of chang
 | Never kill processes | No code path stops another process. The only `Kill` is on Guardian's own child process when a read-only command times out. |
 | Never disable security software or change system settings | No adapter contains a command that writes settings. Follow-ups tell the user where to make a change themselves. |
 | Honest reporting | `CheckReport` carries implemented / support / permission / ran / evidence / changes / succeeded / follow-up. `ReportLanguage.Summarize` always ends with "This is not a guarantee that the computer is safe." `ReportingTests.No_source_or_ui_text_contains_an_overclaim` scans every source and XAML file. |
+| Antivirus actions | `AntivirusCoordinator`: scheduling and starting scans are Safe Maintenance operations (refused in Observe Only), logged with how to undo; removing Guardian's own scheduled task is always allowed. Guardian never deletes or quarantines files itself: Defender's own remediation decides, and its quarantine is restorable from Windows Security > Protection history. Guardian never changes Defender's settings or exclusions. The scheduled task runs with `LeastPrivilege`, never as SYSTEM. |
 | AI suspicion is never enough | There are no AI features in 0.1. Nothing quarantines files at all. |
 
 ## What Safe Maintenance can and cannot do

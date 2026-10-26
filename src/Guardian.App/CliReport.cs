@@ -21,6 +21,7 @@ public static class CliReport
         reports.AddRange(scan.Reports);
         var startup = await host.Adapter.Startup.ListAsync();
         reports.AddRange(startup.Reports);
+        reports.Add(host.StartupWatch.Update(startup.Items));
 
         if (json)
         {

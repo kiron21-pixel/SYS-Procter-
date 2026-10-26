@@ -1,3 +1,4 @@
+using Guardian.Core.Antivirus;
 using Guardian.Core.Cleanup;
 using Guardian.Core.Inventory;
 using Guardian.Core.Performance;
@@ -29,4 +30,6 @@ public interface IPlatformAdapter
     IApplicationInventory Applications { get; }
     ICleanupPlatform Cleanup { get; }
     INativeScheduler Scheduler { get; }
+    /// <summary>The OS antivirus engine Guardian can ask to scan, or null when none is supported on this OS.</summary>
+    IAntivirusEngine? Antivirus => null;
 }

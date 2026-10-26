@@ -2,7 +2,9 @@
 
 ## Everywhere
 - **Preview only.** No platform is declared supported; see [PLATFORM_STATUS.md](PLATFORM_STATUS.md).
-- No antivirus scanning, real-time protection, or malware removal. Guardian reports on the OS's own protection.
+- Guardian is not an antivirus engine. On Windows it schedules and starts **Microsoft Defender** scans and reports Defender's results;
+  Defender decides what is a threat and removes or quarantines it. On macOS (XProtect) and Linux (ClamAV) Guardian only reports status for now.
+- No tool can guarantee protection. Guardian checks each protection layer and says plainly which ones are off.
 - No AI features yet, despite the name.
 - Scheduled reports: definitions for Task Scheduler, launchd and systemd timers are generated in code, but the UI
   does not install them yet.
@@ -13,6 +15,10 @@
 - The app has not been checked with screen readers.
 
 ## Windows
+- The daily Defender scan is a Task Scheduler task that runs as the signed-in user. It has passed unit tests and builds, but has
+  **not yet been confirmed on a real laptop**: in particular, that `MpCmdRun.exe -Scan` works for a standard (non-admin) account.
+  If the task's last result shows "Did not complete", run Guardian once as administrator and turn the scan on again.
+- If another antivirus is active, Defender runs in passive mode and Guardian's scans and threat history may be empty.
 - Defender status comes from `Get-MpComputerStatus`. When another antivirus is active, Defender may report as off; Guardian
   says so rather than calling it a problem.
 - The Security Center `productState` value is undocumented by Microsoft. Guardian's decoding is the widely used one and is labelled best-effort.

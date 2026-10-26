@@ -23,7 +23,11 @@ public static class FeatureStatus
             new("DISM / SFC repair proposals", "Partly", Only(OsFamily.Windows), "Plans and approval flow exist; not yet exposed in the UI."),
             new("macOS software update check", "Yes", Only(OsFamily.MacOS), "On demand; contacts Apple."),
             new("ClamAV status", "Yes", Only(OsFamily.Linux), "Optional; reported as Not available when not installed."),
-            new("Run antivirus scans", "No", "Not implemented", "Planned for Safe Maintenance using the system's own scanner."),
+            new("Daily antivirus scan", os == OsFamily.Windows ? "Yes" : "No", os == OsFamily.Windows ? "Yes" : "Not implemented",
+                os == OsFamily.Windows ? "Microsoft Defender scan at a time you choose (default 07:30); Defender removes threats. Needs Safe Maintenance." :
+                os == OsFamily.MacOS ? "XProtect scans automatically; macOS does not let other apps start XProtect scans." : "ClamAV scanning is planned."),
+            new("Defender health and threat history", "Yes", Only(OsFamily.Windows), "Real-time, tamper and cloud protection, definition age, last 30 days of detections."),
+            new("New startup item warnings", "Yes", "Yes", "Flags programs that add themselves to startup after your last review."),
             new("Scheduled scans", "Partly", "Not installed", $"{(p.Family switch { OsFamily.Windows => "Task Scheduler", OsFamily.MacOS => "launchd", _ => "systemd user timer" })} definitions are generated; installing them is manual."),
             new("Self-update", "No", "Not implemented", "Updates come from your installer/package manager."),
             new("AI analysis", "No", "Not implemented", "No AI features yet. AI suspicion alone will never trigger quarantine or deletion."),

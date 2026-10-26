@@ -16,7 +16,7 @@ explicitly turn on a maintenance mode.
 | Mode | What Guardian may do | How you enable it |
 |---|---|---|
 | **A · Observe Only** (default) | Read security status, performance, startup items, installed apps; list cleanup candidates; write reports. **No changes.** | Default after install |
-| **B · Safe Maintenance** | Move temp files you select, that pass every safeguard, into Guardian's own holding area (restorable for 7 days). | Type `ENABLE SAFE MAINTENANCE` |
+| **B · Safe Maintenance** | Move temp files you select, that pass every safeguard, into Guardian's own holding area (restorable for 7 days). Schedule a daily Microsoft Defender scan (default 07:30) and start scans; Defender removes what it finds. | Type `ENABLE SAFE MAINTENANCE` |
 | **C · Controlled Repair** | Run a specific repair (for example Windows DISM/SFC) only after you approve that exact operation. | Type `ENABLE CONTROLLED REPAIR`, then approve each repair |
 
 Every check shows whether it is implemented, supported on this OS, permitted, whether it actually ran, the

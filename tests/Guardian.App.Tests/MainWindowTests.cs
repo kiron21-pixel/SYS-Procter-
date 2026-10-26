@@ -58,8 +58,11 @@ public class MainWindowTests
                 var tabs = window.GetLogicalDescendants().OfType<TabControl>().Single();
                 tabs.SelectedIndex = 1;
                 Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+                Capture(window, shot.Replace(".png", "-protection.png"));
+                tabs.SelectedIndex = 2;
+                Avalonia.Threading.Dispatcher.UIThread.RunJobs();
                 Capture(window, shot.Replace(".png", "-security.png"));
-                tabs.SelectedIndex = 5;
+                tabs.SelectedIndex = 6;
                 Avalonia.Threading.Dispatcher.UIThread.RunJobs();
                 Capture(window, shot.Replace(".png", "-mode.png"));
             }

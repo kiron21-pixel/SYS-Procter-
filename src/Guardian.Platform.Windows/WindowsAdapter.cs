@@ -1,5 +1,6 @@
 using System.Runtime.Versioning;
 using System.Security.Principal;
+using Guardian.Core.Antivirus;
 using Guardian.Core.Cleanup;
 using Guardian.Core.Inventory;
 using Guardian.Core.Performance;
@@ -16,12 +17,12 @@ namespace Guardian.Platform.Windows;
 /// NOT YET RUN ON WINDOWS: see docs/PLATFORM_STATUS.md.
 /// </summary>
 [SupportedOSPlatform("windows")]
-public sealed class WindowsAdapter : IPlatformAdapter
+public sealed partial class WindowsAdapter : IPlatformAdapter
 {
     private readonly ReadOnlyCommandRunner _run;
-    private readonly ReadOnlyCommand? _defender, _avProducts, _firewall, _hotfix, _bitlocker, _dismCheck, _sfcVerify, _trustedInstaller;
+    private readonly ReadOnlyCommand? _defender, _protection, _pendingUpdates, _avProducts, _firewall, _hotfix, _bitlocker, _dismCheck, _sfcVerify, _trustedInstaller;
 
-    public WindowsAdapter(ICommandRunner? runner = null)
+    public WindowsAdapter(ICommandRunner? runner = null, string? dataDirectory = null)
     {
         var allow = new List<ReadOnlyCommand>();
         var tools = new List<string>();
@@ -44,6 +45,8 @@ public sealed class WindowsAdapter : IPlatformAdapter
         }
         if (ps is not null) tools.Add("powershell.exe");
         _defender = Ps("Get-MpComputerStatus | Select-Object AMServiceEnabled,AntivirusEnabled,RealTimeProtectionEnabled,AntivirusSignatureLastUpdated,QuickScanEndTime | ConvertTo-Json -Compress");
+        _protection = Ps("$s = Get-MpComputerStatus; $p = Get-MpPreference; [pscustomobject]@{ RealTime = $s.RealTimeProtectionEnabled; Tamper = $s.IsTamperProtected; Behavior = $s.BehaviorMonitorEnabled; Ioav = $s.IoavProtectionEnabled; SignatureAgeDays = [int]$s.AntivirusSignatureAge; Mode = [string]$s.AMRunningMode; Maps = [int]$p.MAPSReporting; Pua = [int]$p.PUAProtection } | ConvertTo-Json -Compress");
+        _pendingUpdates = Ps("$r = (New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher().Search('IsInstalled=0 and IsHidden=0 and Type=''Software'''); ConvertTo-Json -InputObject @($r.Updates | ForEach-Object { [pscustomobject]@{ Title = $_.Title; MsrcSeverity = $_.MsrcSeverity } }) -Compress");
         _avProducts = Ps("Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct | Select-Object displayName,productState | ConvertTo-Json -Compress");
         _firewall = Ps("Get-NetFirewallProfile | Select-Object Name,@{n='Enabled';e={[bool]$_.Enabled}} | ConvertTo-Json -Compress");
         _hotfix = Ps("Get-CimInstance -ClassName Win32_QuickFixEngineering | Where-Object InstalledOn | Sort-Object InstalledOn -Descending | Select-Object -First 1 -ExpandProperty InstalledOn | ForEach-Object { $_.ToString('o') }");
@@ -51,7 +54,10 @@ public sealed class WindowsAdapter : IPlatformAdapter
         _dismCheck = Exe("dism.exe", "/Online", "/Cleanup-Image", "/CheckHealth");
         _sfcVerify = Exe("sfc.exe", "/verifyonly");
         _trustedInstaller = Exe("sc.exe", "query", "TrustedInstaller");
-        _run = new ReadOnlyCommandRunner(runner ?? new ProcessCommandRunner(), allow);
+        allow.AddRange(DefenderEngine.ReadOnlyCommands);
+        var inner = runner ?? new ProcessCommandRunner();
+        _run = new ReadOnlyCommandRunner(inner, allow);
+        Antivirus = new DefenderEngine(inner, _run, dataDirectory ?? Path.GetTempPath());
 
         var v = Environment.OSVersion.Version;
         var (targeted, note) = SupportMatrix.Windows(v);
@@ -73,9 +79,14 @@ public sealed class WindowsAdapter : IPlatformAdapter
         SecurityChecks =
         [
             new DelegateCheck("win.defender", "Microsoft Defender Antivirus", DefenderCheck),
+            new DelegateCheck("win.defender-protection", "Defender protection features", ProtectionCheck),
+            new DelegateCheck("win.defender-threats", "Threats Defender found (last 30 days)", async ct => (await Antivirus.RecentThreatsAsync(TimeSpan.FromDays(30), ct)).Report),
+            new DelegateCheck("win.defender-schedule", "Daily Defender scan", ScheduleCheck),
             new DelegateCheck("win.av-products", "Antivirus registered with Windows Security", AvProductsCheck),
             new DelegateCheck("win.firewall", "Windows Firewall", FirewallCheck),
             new DelegateCheck("win.updates", "Recent Windows updates", UpdatesCheck),
+            new DelegateCheck("win.pending-updates", "Windows updates waiting to install (contacts Windows Update)", PendingUpdatesCheck, onDemandOnly: true),
+            new DelegateCheck("win.smartscreen", "SmartScreen (blocks dangerous downloads and apps)", SmartScreenCheck),
             new DelegateCheck("win.reboot", "Restart pending", RebootCheck),
             new DelegateCheck("win.uac", "User Account Control", UacCheck),
             new DelegateCheck("win.bitlocker", "BitLocker on the system drive", BitLockerCheck),
@@ -98,6 +109,8 @@ public sealed class WindowsAdapter : IPlatformAdapter
     public ICleanupPlatform Cleanup { get; }
     public INativeScheduler Scheduler { get; }
     public WindowsRepairPreflight Preflight { get; }
+    public DefenderEngine Antivirus { get; }
+    IAntivirusEngine? IPlatformAdapter.Antivirus => Antivirus;
 
     private async Task<CheckReport> DefenderCheck(CancellationToken ct)
     {

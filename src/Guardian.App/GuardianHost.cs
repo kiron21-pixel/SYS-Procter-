@@ -1,4 +1,6 @@
+using Guardian.Core.Antivirus;
 using Guardian.Core.Cleanup;
+using Guardian.Core.Inventory;
 using Guardian.Core.Modes;
 using Guardian.Core.Platform;
 using Guardian.Core.Reporting;
@@ -17,12 +19,14 @@ public sealed class GuardianHost : IDisposable
         DataDirectory = dataDirectory ?? AppPaths.DataDirectory();
         Directory.CreateDirectory(DataDirectory);
         Database = new GuardianDatabase(AppPaths.DatabasePath(DataDirectory));
-        Adapter = CreateAdapter();
+        Adapter = CreateAdapter(DataDirectory);
         Modes = new ModeManager(Database);
         Gate = new OperationGate(Modes);
         CleanupPolicy = new CleanupPolicy();
         Scanner = new CleanupScanner(Adapter.Cleanup, CleanupPolicy);
         Cleaner = new HoldingAreaCleaner(AppPaths.HoldingArea(DataDirectory), Scanner, Gate, Modes, Database);
+        Antivirus = Adapter.Antivirus is { } engine ? new AntivirusCoordinator(engine, Gate, Modes, Database) : null;
+        StartupWatch = new StartupWatch(Database);
     }
 
     public string DataDirectory { get; }
@@ -33,10 +37,13 @@ public sealed class GuardianHost : IDisposable
     public CleanupPolicy CleanupPolicy { get; }
     public CleanupScanner Scanner { get; }
     public HoldingAreaCleaner Cleaner { get; }
+    /// <summary>Null when Guardian cannot drive an antivirus engine on this OS.</summary>
+    public AntivirusCoordinator? Antivirus { get; }
+    public StartupWatch StartupWatch { get; }
 
-    public static IPlatformAdapter CreateAdapter()
+    public static IPlatformAdapter CreateAdapter(string dataDirectory)
     {
-        if (OperatingSystem.IsWindows()) return new WindowsAdapter();
+        if (OperatingSystem.IsWindows()) return new WindowsAdapter(dataDirectory: dataDirectory);
         if (OperatingSystem.IsMacOS()) return new MacAdapter();
         if (OperatingSystem.IsLinux()) return new LinuxAdapter();
         throw new PlatformNotSupportedException("AI Laptop Guardian runs on Windows, macOS and Linux only.");

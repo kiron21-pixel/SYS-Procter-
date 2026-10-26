@@ -83,6 +83,67 @@
         </ScrollViewer>
       </TabItem>
 
+      <!-- Protection -->
+      <TabItem Header="Protection">
+        <ScrollViewer>
+          <StackPanel MaxWidth="900" HorizontalAlignment="Left">
+            <Border Classes="card" IsVisible="{Binding !ProtectionAvailable}">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="h2" Text="Antivirus" />
+                <TextBlock Classes="muted" Text="{Binding ProtectionUnavailableText}" />
+              </StackPanel>
+            </Border>
+            <StackPanel IsVisible="{Binding ProtectionAvailable}">
+              <Border Classes="card">
+                <StackPanel Spacing="8">
+                  <TextBlock Classes="h2" Text="{Binding EngineName, StringFormat='Daily {0} scan'}" />
+                  <TextBlock Text="{Binding ScheduleText}" TextWrapping="Wrap" />
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Time (HH:MM)" VerticalAlignment="Center" />
+                    <TextBox Text="{Binding ScanTime}" Width="80" />
+                    <CheckBox IsChecked="{Binding FullScan}" Content="Full scan (slower, checks every file)" Margin="12,0,0,0" />
+                  </StackPanel>
+                  <TextBlock Classes="muted" FontSize="12" Text="{Binding ScanCommandText}" />
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Classes="primary" Content="Turn on daily scan" Command="{Binding EnableDailyScanCommand}" IsEnabled="{Binding CanMoveFiles}" />
+                    <Button Content="Turn off daily scan" Command="{Binding DisableDailyScanCommand}" IsVisible="{Binding ScheduleInstalled}" />
+                    <Button Content="Quick scan now" Command="{Binding ScanNowCommand}" IsEnabled="{Binding CanMoveFiles}" />
+                    <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsScanning}" Width="100" VerticalAlignment="Center" />
+                  </StackPanel>
+                  <TextBlock Classes="muted" IsVisible="{Binding IsObserveOnly}" Text="Scheduling or starting scans needs Safe Maintenance mode (Mode tab), because it adds a scheduled task to Windows." />
+                  <TextBlock Text="{Binding ProtectionMessage}" TextWrapping="Wrap" Foreground="{DynamicResource BrandRed}" />
+                </StackPanel>
+              </Border>
+              <Border Classes="card">
+                <StackPanel Spacing="6">
+                  <TextBlock Classes="h2" Text="Threats found in the last 30 days" />
+                  <TextBlock Classes="muted" Text="Reported by Microsoft Defender. Guardian never decides on its own that a file is a threat." />
+                  <ItemsControl ItemsSource="{Binding Threats}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ThreatRow">
+                        <StackPanel Margin="0,4">
+                          <TextBlock FontWeight="SemiBold" Text="{Binding Name}" />
+                          <TextBlock FontSize="12" Text="{Binding When}" Classes="muted" />
+                          <TextBlock FontSize="12" Text="{Binding Status, StringFormat='Defender action: {0}'}" />
+                          <TextBlock FontSize="12" Text="{Binding Files}" Classes="muted" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <Button Content="Refresh" Command="{Binding RefreshProtectionCommand}" HorizontalAlignment="Left" />
+                </StackPanel>
+              </Border>
+            </StackPanel>
+            <Border Classes="card">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="h2" Text="What this protects against, honestly" />
+                <TextBlock Classes="muted" Text="Layers help: a daily scan, real-time protection, tamper protection, updates, SmartScreen and a firewall each catch things the others miss. No antivirus or combination of tools can guarantee protection, so keep backups of important files and be careful with unexpected links and downloads. The Security tab checks each layer." />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
       <!-- Security -->
       <TabItem Header="Security">
         <DockPanel>
@@ -221,6 +282,12 @@
             <TextBlock Classes="muted" Text="Read-only. Guardian never disables startup items or uninstalls, modifies or replaces applications." />
             <Button Content="Load inventory" Command="{Binding LoadInventoryCommand}" HorizontalAlignment="Left" />
             <TextBlock Text="{Binding InventorySummary}" Classes="muted" />
+            <Border Classes="pill" IsVisible="{Binding NewStartupSummary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" HorizontalAlignment="Stretch" Padding="12,8">
+              <StackPanel Spacing="6">
+                <TextBlock Text="{Binding NewStartupSummary}" TextWrapping="Wrap" />
+                <Button Content="Mark all as reviewed" Command="{Binding MarkStartupReviewedCommand}" />
+              </StackPanel>
+            </Border>
           </StackPanel>
           <Grid ColumnDefinitions="*,16,*">
             <Border Classes="card">

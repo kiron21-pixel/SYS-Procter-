@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Guardian.Core.Inventory;
 using Guardian.Core.Modes;
 using Guardian.Core.Recovery;
 using Guardian.Core.Reporting;
@@ -10,7 +11,7 @@ namespace Guardian.Data;
 /// Guardian's local SQLite store: mode and consent history, the operation log, and check history.
 /// It only ever lives in Guardian's own data folder and is never sent anywhere.
 /// </summary>
-public sealed class GuardianDatabase : IModeStore, IOperationLog, IDisposable
+public sealed class GuardianDatabase : IModeStore, IOperationLog, IStartupSeenStore, IDisposable
 {
     public const int SchemaVersion = 1;
     private readonly SqliteConnection _conn;
@@ -48,6 +49,8 @@ public sealed class GuardianDatabase : IModeStore, IOperationLog, IDisposable
             CREATE TABLE IF NOT EXISTS check_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 check_id TEXT NOT NULL, completed_at TEXT NOT NULL, report_json TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS startup_seen (
+                key TEXT PRIMARY KEY, display TEXT NOT NULL, first_seen TEXT NOT NULL, reviewed INTEGER NOT NULL);
             """);
         Exec("INSERT OR IGNORE INTO meta(key, value) VALUES ('schema_version', $v);", ("$v", SchemaVersion.ToString()));
     }
@@ -140,6 +143,42 @@ public sealed class GuardianDatabase : IModeStore, IOperationLog, IDisposable
         while (r.Read()) list.Add(JsonSerializer.Deserialize<CheckReport>(r.GetString(0))!);
         return list;
     }
+
+    // ---- IStartupSeenStore -------------------------------------------------
+
+    public bool HasBaseline()
+    {
+        using var cmd = Command("SELECT COUNT(*) FROM meta WHERE key='startup_baseline';");
+        return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+    }
+
+    public IReadOnlySet<string> KnownKeys()
+    {
+        using var cmd = Command("SELECT key FROM startup_seen;");
+        using var r = cmd.ExecuteReader();
+        var set = new HashSet<string>(StringComparer.Ordinal);
+        while (r.Read()) set.Add(r.GetString(0));
+        return set;
+    }
+
+    public void Add(IEnumerable<(string Key, string Display)> items, bool reviewed, DateTimeOffset at)
+    {
+        foreach (var (key, display) in items)
+            Exec("INSERT OR IGNORE INTO startup_seen(key, display, first_seen, reviewed) VALUES ($k, $d, $t, $r);",
+                ("$k", key), ("$d", display), ("$t", at.ToString("O")), ("$r", reviewed ? 1 : 0));
+        Exec("INSERT OR IGNORE INTO meta(key, value) VALUES ('startup_baseline', $t);", ("$t", at.ToString("O")));
+    }
+
+    public IReadOnlyList<(string Key, string Display, DateTimeOffset FirstSeen)> Unreviewed()
+    {
+        using var cmd = Command("SELECT key, display, first_seen FROM startup_seen WHERE reviewed=0 ORDER BY first_seen;");
+        using var r = cmd.ExecuteReader();
+        var list = new List<(string, string, DateTimeOffset)>();
+        while (r.Read()) list.Add((r.GetString(0), r.GetString(1), DateTimeOffset.Parse(r.GetString(2))));
+        return list;
+    }
+
+    public void MarkAllReviewed() => Exec("UPDATE startup_seen SET reviewed=1 WHERE reviewed=0;");
 
     // ---- helpers ----------------------------------------------------------
 

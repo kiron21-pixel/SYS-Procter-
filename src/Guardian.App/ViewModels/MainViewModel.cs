@@ -26,6 +26,7 @@ public sealed partial class MainViewModel : ObservableObject
         host.Modes.ModeChanged += _ => RefreshMode();
         RefreshMode();
         RefreshActivity();
+        if (ProtectionAvailable) _ = RefreshProtectionAsync();
     }
 
     // ---- Overview ---------------------------------------------------------
@@ -50,6 +51,7 @@ public sealed partial class MainViewModel : ObservableObject
                 if (Checks.FirstOrDefault(c => c.Report.CheckId == r.CheckId) is { } row) row.Report = r;
             OverallSummary = ReportLanguage.Summarize(reports);
             await RefreshPerformanceAsync();
+            if (ProtectionAvailable) await RefreshProtectionAsync();
         }
         finally { IsBusy = false; }
     }
@@ -129,6 +131,8 @@ public sealed partial class MainViewModel : ObservableObject
         _allApps = apps.Items.Select(AppRow.From).OrderBy(a => a.Name, StringComparer.OrdinalIgnoreCase).ToList();
         ApplyAppFilter();
         InventorySummary = string.Join(" ", startup.Reports.Concat(apps.Reports).Select(r => $"{r.Title}: {r.Summary}"));
+        var watch = _host.StartupWatch.Update(startup.Items);
+        NewStartupSummary = watch.Summary + (watch.Evidence.Count > 0 && watch.Finding == Finding.Attention ? "\n" + string.Join("\n", watch.Evidence.Select(e => $"• {e.Detail} ({e.Source})")) : "");
     }
 
     private void ApplyAppFilter()
