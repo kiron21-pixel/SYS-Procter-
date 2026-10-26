@@ -7,7 +7,7 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Package Name="AI Laptop Guardian" Manufacturer="AI Laptop Guardian" Version="$(var.Version)"
            UpgradeCode="F0783A61-1612-4573-93B0-B30AD4B9C571" Scope="perMachine" Compressed="yes">
-    <MajorUpgrade DowngradeErrorMessage="A newer version of AI Laptop Guardian is already installed." />
+    <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of AI Laptop Guardian is already installed." />
     <MediaTemplate EmbedCab="yes" />
     <Icon Id="GuardianIcon" SourceFile="$(var.RepoRoot)\assets\brand\guardian.ico" />
     <Property Id="ARPPRODUCTICON" Value="GuardianIcon" />

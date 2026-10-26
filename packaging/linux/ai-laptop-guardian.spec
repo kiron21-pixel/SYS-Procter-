@@ -2,7 +2,7 @@
 #   rpmbuild -bb packaging/linux/ai-laptop-guardian.spec --define "_publishdir $PWD/publish" --define "_repo $PWD"
 # NOT YET BUILT OR TESTED: see docs/PLATFORM_STATUS.md.
 Name:           ai-laptop-guardian
-Version:        0.1.0
+Version:        0.2.0
 Release:        1%{?dist}
 Summary:        Security and maintenance status for your computer
 License:        Proprietary
