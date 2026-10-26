@@ -64,7 +64,7 @@ public sealed class TempTree : IDisposable
 
     public string File(string relative, DateTime lastWriteUtc, string content = "x")
     {
-        var p = Path.Combine(Temp, relative);
+        var p = Path.GetFullPath(Path.Combine(Temp, relative));
         Directory.CreateDirectory(Path.GetDirectoryName(p)!);
         System.IO.File.WriteAllText(p, content);
         System.IO.File.SetCreationTimeUtc(p, lastWriteUtc);
