@@ -3,18 +3,40 @@
 # Signing: set $env:SIGN_CERT_THUMBPRINT to sign the exe and MSI with signtool (Authenticode).
 param([ValidateSet('x64','arm64')][string]$Arch = 'x64')
 $ErrorActionPreference = 'Stop'
-$root = Resolve-Path "$PSScriptRoot\..\.."
-$version = ([xml](Get-Content "$root\Directory.Build.props")).Project.PropertyGroup.Version
+
+# Native tools don't throw on failure, so check each exit code and surface the output (as a CI annotation too).
+function Invoke-Checked([string]$What, [scriptblock]$Command) {
+  $output = & $Command 2>&1 | Out-String
+  Write-Host $output
+  if ($LASTEXITCODE -ne 0) {
+    $tail = ($output -split "`n" | Where-Object { $_.Trim() } | Select-Object -Last 15) -join ' | '
+    Write-Host "::error title=$What failed::$tail"
+    throw "$What failed with exit code $LASTEXITCODE"
+  }
+}
+
+$root = (Resolve-Path "$PSScriptRoot\..\..").Path
+$version = (Select-Xml -Path "$root\Directory.Build.props" -XPath '//Version').Node.InnerText
 $publish = "$root\artifacts\windows\publish-$Arch"
 $out = "$root\artifacts\windows\AI-Laptop-Guardian-$version-$Arch.msi"
+New-Item -ItemType Directory -Force -Path (Split-Path $out) | Out-Null
 
-dotnet publish "$root\src\Guardian.App\Guardian.App.csproj" -c Release -r "win-$Arch" --self-contained true -p:DebugType=none -o $publish
+Invoke-Checked 'dotnet publish' { dotnet publish "$root\src\Guardian.App\Guardian.App.csproj" -c Release -r "win-$Arch" --self-contained true -p:DebugType=none -o $publish }
 if ($env:SIGN_CERT_THUMBPRINT) {
-  signtool sign /sha1 $env:SIGN_CERT_THUMBPRINT /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 "$publish\ai-laptop-guardian.exe"
+  Invoke-Checked 'signtool (exe)' { signtool sign /sha1 $env:SIGN_CERT_THUMBPRINT /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 "$publish\ai-laptop-guardian.exe" }
 }
-if (-not (Get-Command wix -ErrorAction SilentlyContinue)) { dotnet tool install --global wix --version 5.0.2 }
-wix build "$PSScriptRoot\Package.wxs" -arch $Arch -d Version=$version -d PublishDir=$publish -o $out
+
+$toolDir = "$root\artifacts\tools"
+$wix = "$toolDir\wix.exe"
+if (-not (Test-Path $wix)) {
+  Invoke-Checked 'install WiX' { dotnet tool install wix --version 5.0.2 --tool-path $toolDir }
+}
+Invoke-Checked 'wix build' { & $wix build "$PSScriptRoot\Package.wxs" -arch $Arch -d "Version=$version" -d "PublishDir=$publish" -o $out }
+if (-not (Test-Path $out)) {
+  Write-Host "::error title=MSI missing::wix build reported success but $out does not exist"
+  throw "MSI not produced"
+}
 if ($env:SIGN_CERT_THUMBPRINT) {
-  signtool sign /sha1 $env:SIGN_CERT_THUMBPRINT /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $out
+  Invoke-Checked 'signtool (msi)' { signtool sign /sha1 $env:SIGN_CERT_THUMBPRINT /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 $out }
 }
 Write-Host "Built $out"

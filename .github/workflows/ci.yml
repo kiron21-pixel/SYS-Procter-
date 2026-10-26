@@ -61,6 +61,7 @@ jobs:
         with:
           name: linux-deb
           path: artifacts/linux/*.deb
+          if-no-files-found: error
 
   package-windows:
     needs: test
@@ -75,6 +76,7 @@ jobs:
         with:
           name: windows-msi
           path: artifacts/windows/*.msi
+          if-no-files-found: error
 
   package-macos:
     needs: test
@@ -90,3 +92,4 @@ jobs:
         with:
           name: macos-pkg
           path: artifacts/macos/*.pkg
+          if-no-files-found: error
