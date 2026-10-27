@@ -26,7 +26,17 @@ public sealed partial class MainViewModel : ObservableObject
         host.Modes.ModeChanged += _ => RefreshMode();
         RefreshMode();
         RefreshActivity();
-        if (ProtectionAvailable) _ = RefreshProtectionAsync();
+        if (ProtectionAvailable) _ = InitialProtectionRefreshAsync();
+    }
+
+    private async Task InitialProtectionRefreshAsync()
+    {
+        try { await RefreshProtectionAsync(); }
+        catch (Exception ex)
+        {
+            CrashLog.Write("Protection tab refresh failed", ex);
+            ProtectionMessage = $"Could not read Defender's status: {ex.Message}";
+        }
     }
 
     // ---- Overview ---------------------------------------------------------

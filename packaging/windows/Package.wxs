@@ -1,6 +1,6 @@
 <!--
   WiX Toolset v5 MSI for Windows 10/11 (x64 and arm64). NOT YET BUILT OR TESTED: see docs/PLATFORM_STATUS.md.
-  Installs only into Program Files\AI Laptop Guardian plus a Start menu shortcut. No services, drivers,
+  Installs only into Program Files\AI Laptop Guardian plus Start menu and desktop shortcuts. No services, drivers,
   scheduled tasks, firewall rules or changes to other software. Uninstalling removes exactly what was installed;
   per-user data in %LOCALAPPDATA%\AI Laptop Guardian is kept (see docs/INSTALL.md).
 -->
@@ -29,9 +29,18 @@
       </Component>
     </StandardDirectory>
 
+    <StandardDirectory Id="DesktopFolder">
+      <Component Id="DesktopShortcut" Guid="*">
+        <Shortcut Id="GuardianDesktopShortcut" Name="AI Laptop Guardian" Description="Security and maintenance status (Observe Only by default)"
+                  Target="[INSTALLFOLDER]ai-laptop-guardian.exe" WorkingDirectory="INSTALLFOLDER" Icon="GuardianIcon" />
+        <RegistryValue Root="HKLM" Key="Software\AI Laptop Guardian" Name="DesktopShortcutInstalled" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+
     <Feature Id="Main" Title="AI Laptop Guardian" Level="1">
       <ComponentGroupRef Id="AppFiles" />
       <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="DesktopShortcut" />
     </Feature>
   </Package>
 </Wix>

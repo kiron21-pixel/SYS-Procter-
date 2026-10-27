@@ -8,7 +8,8 @@ change other software.
 Build on Windows: `pwsh packaging/windows/build-msi.ps1 -Arch x64` (needs .NET 10 SDK; installs WiX v5 if missing).
 Set `SIGN_CERT_THUMBPRINT` to Authenticode-sign the exe and MSI; unsigned builds trigger SmartScreen warnings.
 
-- Install: double-click the MSI. It installs to `C:\Program Files\AI Laptop Guardian` and adds a Start menu shortcut.
+- Install: double-click the MSI. It installs to `C:\Program Files\AI Laptop Guardian` and adds Start menu and desktop shortcuts. The installer shows only a short progress box and then closes; open the app from the desktop icon or Start menu. Double-clicking the MSI again does not open the app.
+- If the app fails to start it shows a message and writes the error to `%LOCALAPPDATA%\AI Laptop Guardian\crash.log`.
 - Uninstall: Settings → Apps → Installed apps → AI Laptop Guardian → Uninstall (or `msiexec /x <file>.msi`).
 - Then, if you want, delete `%LOCALAPPDATA%\AI Laptop Guardian` (logs and held files).
 

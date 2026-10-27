@@ -78,6 +78,8 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - run: pwsh packaging/windows/build-msi.ps1 -Arch x64
+      - name: Install the MSI and start the installed app
+        run: pwsh packaging/windows/smoke-test.ps1
       - uses: actions/upload-artifact@v4
         with:
           name: windows-msi
