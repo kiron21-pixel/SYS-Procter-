@@ -118,4 +118,4 @@ jobs:
           TAG: ${{ inputs.release_tag || github.ref_name }}
         run: |
           ls -R dist
-          gh release create "$TAG" --target "$GITHUB_SHA" dist/*/* --repo "$GITHUB_REPOSITORY" --title "AI Laptop Guardian $TAG (preview)" --notes "Preview build. Installers are not code-signed yet: on Windows click More info > Run anyway. Starts in Observe Only mode. See docs/PLATFORM_STATUS.md for what has been tested on each system."
+          gh release create "$TAG" --target "$GITHUB_SHA" dist/windows-msi/*.msi dist/macos-pkg/*.pkg dist/linux-deb/*.deb --repo "$GITHUB_REPOSITORY" --title "AI Laptop Guardian $TAG (preview)" --notes "Preview build. Installers are not code-signed yet: on Windows click More info > Run anyway. Starts in Observe Only mode. See docs/PLATFORM_STATUS.md for what has been tested on each system."
