@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
 
 env:
@@ -93,3 +94,22 @@ jobs:
           name: macos-pkg
           path: artifacts/macos/*.pkg
           if-no-files-found: error
+
+  release:
+    name: Publish installers to a GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [package-linux, package-windows, package-macos]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: '*-{msi,pkg,deb}'
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -R dist
+          gh release create "$GITHUB_REF_NAME" dist/*/* --repo "$GITHUB_REPOSITORY" --title "AI Laptop Guardian $GITHUB_REF_NAME (preview)" --notes "Preview build. Installers are not code-signed yet: on Windows click More info > Run anyway. Starts in Observe Only mode. See docs/PLATFORM_STATUS.md for what has been tested on each system."
