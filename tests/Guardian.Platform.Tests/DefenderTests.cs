@@ -55,6 +55,10 @@ public class DefenderTests
         var never = DefenderParsers.Schedule("""{"Start":"2026-01-01T07:30:00","Args":"-Scan -ScanType 2","LastRun":"1999-11-30T00:00:00","LastResult":267011}""", "x");
         Assert.Equal(ScanKind.Full, never.Kind);
         Assert.Equal("Not run yet", never.LastResult);
+        var missed = DefenderParsers.Schedule("""{"Start":"2026-01-01T07:30:00","Args":"-Scan -ScanType 1","LastRun":"1999-11-30T00:00:00","LastResult":267011,"NextRun":"2026-10-29T07:30:00+04:00","Missed":1,"State":"Ready"}""", "x");
+        Assert.Equal(1, missed.MissedRuns);
+        Assert.Equal("Ready", missed.State);
+        Assert.Equal(new DateTimeOffset(2026, 10, 29, 7, 30, 0, TimeSpan.FromHours(4)), missed.NextRun);
     }
 
     [Fact]

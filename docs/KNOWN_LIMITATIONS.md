@@ -16,8 +16,11 @@
 
 ## Windows
 - The daily Defender scan is a Task Scheduler task that runs as the signed-in user. It has passed unit tests and builds, but has
-  **not yet been confirmed on a real laptop**: in particular, that `MpCmdRun.exe -Scan` works for a standard (non-admin) account.
+  **not yet been confirmed to run on schedule on a real laptop**. Starting `MpCmdRun.exe -Scan` from Guardian as a standard user was confirmed on Windows 11 Home (2026-10-27).
   If the task's last result shows "Did not complete", run Guardian once as administrator and turn the scan on again.
+- The scan runs only while the laptop is on and the user is signed in. If the laptop is closed or off at the scheduled time,
+  Windows is asked to catch up when it is available, but after sleep this can be delayed or skipped (seen on a real laptop,
+  2026-10-28). Pick a time when the laptop is usually in use; the Protection tab shows next run and missed runs.
 - If another antivirus is active, Defender runs in passive mode and Guardian's scans and threat history may be empty.
 - Defender status comes from `Get-MpComputerStatus`. When another antivirus is active, Defender may report as off; Guardian
   says so rather than calling it a problem.

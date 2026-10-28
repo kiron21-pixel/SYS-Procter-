@@ -29,10 +29,19 @@ public sealed partial class WindowsAdapter
                 "Turn it on in the Protection tab. This needs Safe Maintenance mode.");
         ev.Add(new("Schedule", $"{s.Kind} scan daily at {s.Time:HH\\:mm}"));
         ev.Add(new("Last run", s.LastRun is { } l ? $"{l.ToLocalTime():yyyy-MM-dd HH:mm}: {s.LastResult}" : "not run yet"));
+        ev.Add(new("Next run", s.NextRun is { } n ? $"{n.ToLocalTime():yyyy-MM-dd HH:mm}" : "none planned"));
+        ev.Add(new("Missed runs", s.MissedRuns?.ToString() ?? "unknown"));
+        ev.Add(new("Task state", s.State ?? "unknown"));
         var failed = s.LastResult?.StartsWith("Did not complete", StringComparison.Ordinal) == true;
+        var disabled = string.Equals(s.State, "Disabled", StringComparison.OrdinalIgnoreCase);
+        var missed = s.MissedRuns > 0;
         var overdue = s.LastRun is { } last && DateTimeOffset.Now - last > TimeSpan.FromDays(3);
-        return failed || overdue
-            ? CheckReport.Completed(id, title, Finding.Attention, failed ? "The last scheduled scan did not complete." : "The daily scan has not run for more than 3 days.", ev,
+        return failed || disabled || missed || overdue
+            ? CheckReport.Completed(id, title, Finding.Attention,
+                disabled ? "The daily scan task is turned off in Task Scheduler."
+                : failed ? "The last scheduled scan did not complete."
+                : missed ? $"Windows skipped {s.MissedRuns} scheduled scan(s), usually because the laptop was off or asleep at that time."
+                : "The daily scan has not run for more than 3 days.", ev,
                 "Check that the laptop is on at the scheduled time, or run a scan now from the Protection tab.")
             : CheckReport.Completed(id, title, Finding.NoIssueFound, $"Defender {s.Kind?.ToString().ToLowerInvariant()} scan runs daily at {s.Time:HH\\:mm}.", ev);
     }

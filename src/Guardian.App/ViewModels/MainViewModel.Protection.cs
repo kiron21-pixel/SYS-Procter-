@@ -41,7 +41,7 @@ public sealed partial class MainViewModel
         var s = await Task.Run(() => av.Engine.GetScheduleAsync());
         ScheduleInstalled = s.Installed;
         ScheduleText = s.Installed
-            ? $"On: {s.Kind?.ToString().ToLowerInvariant()} scan every day at {s.Time:HH\\:mm}. Last run: {(s.LastRun is { } l ? $"{l.ToLocalTime():yyyy-MM-dd HH:mm}, {s.LastResult}" : "not yet")}."
+            ? $"On: {s.Kind?.ToString().ToLowerInvariant()} scan every day at {s.Time:HH\\:mm}. Last run: {(s.LastRun is { } l ? $"{l.ToLocalTime():yyyy-MM-dd HH:mm}, {s.LastResult}" : "not yet")}. Next run: {(s.NextRun is { } n ? $"{n.ToLocalTime():yyyy-MM-dd HH:mm}" : "none planned")}.{(s.MissedRuns > 0 ? $" Missed: {s.MissedRuns} (laptop off or asleep)." : "")}{(s.State is { } st && st != "Ready" && st != "Running" ? $" Task state: {st}." : "")}"
             : "Off. Defender still protects you in real time and runs its own background scans.";
         var (threats, _) = await Task.Run(() => av.Engine.RecentThreatsAsync(TimeSpan.FromDays(30)));
         Threats.Clear();

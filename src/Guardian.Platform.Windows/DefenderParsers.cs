@@ -68,7 +68,8 @@ public static class DefenderParsers
             null => "Unknown",
             _ => $"Did not complete (code 0x{code:X})",
         };
-        return new(true, time, kind, last, result, evidence);
+        DateTimeOffset? next = DateTimeOffset.TryParse(Str(r, "NextRun"), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeLocal, out var n) && n.Year > 2000 ? n : null;
+        return new(true, time, kind, last, result, evidence) { NextRun = next, MissedRuns = Int(r, "Missed"), State = Str(r, "State") };
     }
 
     public static IReadOnlyList<PendingUpdate> PendingUpdates(string json)

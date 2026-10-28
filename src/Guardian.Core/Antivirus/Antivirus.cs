@@ -6,7 +6,15 @@ namespace Guardian.Core.Antivirus;
 public enum ScanKind { Quick, Full }
 
 /// <summary>The scheduled scan Guardian registered with the OS scheduler, as read back from the scheduler itself.</summary>
-public sealed record ScanScheduleState(bool Installed, TimeOnly? Time, ScanKind? Kind, DateTimeOffset? LastRun, string? LastResult, string Evidence);
+public sealed record ScanScheduleState(bool Installed, TimeOnly? Time, ScanKind? Kind, DateTimeOffset? LastRun, string? LastResult, string Evidence)
+{
+    /// <summary>When the scheduler plans to start it next.</summary>
+    public DateTimeOffset? NextRun { get; init; }
+    /// <summary>Scheduled starts the scheduler skipped (for example because the computer was off).</summary>
+    public int? MissedRuns { get; init; }
+    /// <summary>The scheduler's own state for the task, such as Ready, Running or Disabled.</summary>
+    public string? State { get; init; }
+}
 
 /// <summary>One detection reported by the antivirus engine itself (never by Guardian's own guess).</summary>
 public sealed record ThreatDetection(string Name, string Severity, DateTimeOffset? DetectedAt, string Status, IReadOnlyList<string> Resources);

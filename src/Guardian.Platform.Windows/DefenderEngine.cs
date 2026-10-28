@@ -25,7 +25,7 @@ public sealed class DefenderEngine(ICommandRunner runner, ReadOnlyCommandRunner 
     internal static readonly ReadOnlyCommand QuerySchedule = PowerShell(
         "$t = Get-ScheduledTask -TaskPath '\\AI Laptop Guardian\\' -TaskName 'Daily Defender Scan' -ErrorAction SilentlyContinue; " +
         "if (-not $t) { '{}' } else { $i = $t | Get-ScheduledTaskInfo; " +
-        "[pscustomobject]@{ Start = $t.Triggers[0].StartBoundary; Args = $t.Actions[0].Arguments; LastRun = $i.LastRunTime.ToString('o'); LastResult = $i.LastTaskResult } | ConvertTo-Json -Compress }");
+        "[pscustomobject]@{ Start = $t.Triggers[0].StartBoundary; Args = $t.Actions[0].Arguments; LastRun = $i.LastRunTime.ToString('o'); LastResult = $i.LastTaskResult; NextRun = $i.NextRunTime.ToString('o'); Missed = $i.NumberOfMissedRuns; State = [string]$t.State } | ConvertTo-Json -Compress }");
 
     internal static readonly ReadOnlyCommand QueryThreats = PowerShell(
         "$since = (Get-Date).AddDays(-30); $names = @{}; " +
